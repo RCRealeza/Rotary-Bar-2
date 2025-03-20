@@ -79,16 +79,27 @@
     </div>
 
     <script>
-        // Seu código do Firebase aqui
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "firebase/app";
+        import { getAnalytics } from "firebase/analytics";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
+            authDomain: "bardorotary-517fd.firebaseapp.com",
+            projectId: "bardorotary-517fd",
+            storageBucket: "bardorotary-517fd.firebasestorage.app",
+            messagingSenderId: "317149178650",
+            appId: "1:317149178650:web:53a7bc63cf660436949aa3",
+            measurementId: "G-WQCQZG9PM2"
         };
-        firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
 
         const db = firebase.firestore();
 
@@ -102,7 +113,7 @@
         const closeBarButton = document.getElementById('close-bar');
         const openBarButton = document.getElementById('open-bar');
         const displayDateElement = document.getElementById('display-date');
-        const participants = [];
+        let participants = [];
         let selectedParticipantId = null;
         let meetingDate = new Date();
         let previousDebts = {};
@@ -114,33 +125,56 @@
 
         updateDisplayDate();
 
-        for (let i = 1; i <= 42; i++) {
-            participants.push({ id: i, name: `Participante ${i}`, drinks: {}, paid: false });
-            const participantDiv = document.createElement('div');
-            participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
-            participantDiv.textContent = `Participante ${i}`;
-            participantDiv.dataset.participantId = i;
-            participantDiv.addEventListener('click', () => {
-                if (selectedParticipantId !== null) {
-                    const previousSelected = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
-                    if (previousSelected) {
-                        previousSelected.classList.remove('selected');
+        function renderParticipantsList() {
+            participantsList.innerHTML = '';
+            participants.forEach(participant => {
+                const participantDiv = document.createElement('div');
+                participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
+                participantDiv.textContent = participant.name;
+                participantDiv.dataset.participantId = participant.id;
+                participantDiv.addEventListener('click', () => {
+                    if (selectedParticipantId !== null) {
+                        const previousSelected = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
+                        if (previousSelected) {
+                            previousSelected.classList.remove('selected');
+                        }
                     }
-                }
-                selectedParticipantId = i;
-                participantDiv.classList.add('selected');
-                showMessage(`Participante selecionado: ${participantDiv.textContent}`);
+                    selectedParticipantId = participant.id;
+                    participantDiv.classList.add('selected');
+                    showMessage(`Participante selecionado: ${participantDiv.textContent}`);
+                });
+                participantDiv.addEventListener('dblclick', () => {
+                    const newName = prompt('Enter new name:', participantDiv.textContent);
+                    if (newName && newName.trim() !== "") {
+                        participantDiv.textContent = newName;
+                        participant.name = newName;
+                        showMessage(`Participante ${participant.id} renamed to ${newName}`);
+                    }
+                });
+                participantsList.appendChild(participantDiv);
             });
-            participantDiv.addEventListener('dblclick', () => {
-                const newName = prompt('Enter new name:', participantDiv.textContent);
-                if (newName && newName.trim() !== "") {
-                    participantDiv.textContent = newName;
-                    participant.name = newName;
-                    showMessage(`Participante ${i} renamed to ${newName}`);
-                }
-            });
-            participantsList.appendChild(participantDiv);
         }
+
+        db.collection("bar").doc("dados").get()
+            .then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    meetingDate = data.meetingDate.toDate();
+                    participants = data.participants;
+                    previousDebts = data.previousDebts;
+                    barOpen = data.barOpen;
+                    updateDisplayDate();
+                    renderParticipantsList();
+                    console.log("Dados carregados com sucesso do Firestore!");
+                } else {
+                    console.log("Nenhum dado encontrado no Firestore. Iniciando com valores padrão.");
+                    renderParticipantsList();
+                }
+            })
+            .catch((error) => {
+                console.error("Erro ao carregar dados do Firestore: ", error);
+            });
+
 
         const drinks = [
             { name: 'Soda', price: 5.00 },
@@ -166,6 +200,7 @@
                 }
                 const participant = participants.find(p => p.id === selectedParticipantId);
                 participant.drinks[drink.name] = (participant.drinks[drink.name] || 0) + 1;
+                saveDataToFirestore();
                 showMessage(`Adicionado ${drink.name} a ${participant.name}`);
             });
             const subtractButton = document.createElement('button');
@@ -276,6 +311,7 @@
                     paid: false
                 };
                 participants.push(newParticipant);
+                saveDataToFirestore();
 
                 const participantDiv = document.createElement('div');
                 participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
@@ -312,6 +348,7 @@
             const participant = participants.find(p => p.id === participantId);
             if (participant && participant.drinks[drinkName] && participant.drinks[drinkName] > 0) {
                 participant.drinks[drinkName] -= 1;
+                saveDataToFirestore();
                 showMessage(`Removed 1 ${drinkName} from ${participant.name}`);
             } else {
                 showMessage(`No ${drinkName} to remove from ${participants.find(p => p.id === participantId).name}`);
@@ -328,6 +365,7 @@
             }
             const participant = participants.find(p => p.id === selectedParticipantId);
             participant.paid = true;
+            saveDataToFirestore();
             showMessage(`${participant.name} marked as paid.`);
             const participantDiv = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
             if (participantDiv) {
@@ -358,6 +396,7 @@
                 participant.paid = false;
             });
             meetingDate = new Date(meetingDate.setDate(meetingDate.getDate() + 7));
+            saveDataToFirestore();
             updateDisplayDate();
             participantsList.innerHTML = '';
             participants.forEach(participant => {
@@ -380,7 +419,7 @@
                     const newName = prompt('Enter new name:', participantDiv.textContent);
                     if (newName && newName.trim() !== "") {
                         participantDiv.textContent = newName;
-                        newParticipant.name = newName;
+                        participant.name = newName;
                         showMessage(`Participante ${participant.id} renamed to ${newName}`);
                     }
                 });
@@ -394,8 +433,24 @@
                 return;
             }
             barOpen = true;
+            saveDataToFirestore();
             showMessage('Bar aberto. Os débitos anteriores foram carregados.');
         });
+
+        function saveDataToFirestore() {
+            db.collection("bar").doc("dados").set({
+                meetingDate: meetingDate,
+                participants: participants,
+                previousDebts: previousDebts,
+                barOpen: barOpen
+            })
+                .then(() => {
+                    console.log("Dados salvos com sucesso no Firestore!");
+                })
+                .catch((error) => {
+                    console.error("Erro ao salvar dados no Firestore: ", error);
+                });
+        }
     </script>
 </body>
 </html>
