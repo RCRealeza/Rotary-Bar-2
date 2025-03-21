@@ -91,7 +91,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
             authDomain: "bardorotary-517fd.firebaseapp.com",
@@ -197,7 +197,7 @@
                     }
                     selectedParticipantId = participant.id;
                     participantDiv.classList.add('selected');
-                    showMessage(`Participante selecionado: ${participantDiv.textContent}`);
+                    showMessage(`Participante selecionado: ${participant.name}`);
                 });
                 participantDiv.addEventListener('dblclick', () => {
                     const newName = prompt('Enter new name:', participant.name);
@@ -493,4 +493,4 @@
             pastReportsModal.classList.remove('hidden');
         });
 
-        closePastReportsMo
+        closeP
