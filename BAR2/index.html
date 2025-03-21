@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rotary Club Bar App</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@tailwindcss/browser@latest"></script>
+    <!-- Use a specific version of Tailwind instead of the browser version -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Estilos personalizados para a caixa de mensagem */
         #message-box {
@@ -31,6 +32,30 @@
         .participant-item.selected {
             background-color: #f0f4f8;
             border: 2px solid #3b82f6;
+        }
+        /* Estilos para garantir que os itens tenham largura e altura */
+        #participants-list > div,
+        #drinks-menu > button,
+        #consumption-summary > div {
+            width: 100%; /* Garante que os itens ocupem a largura total do contêiner */
+            height: auto; /* Permite que a altura se ajuste ao conteúdo */
+            display: block; /* Evita comportamentos estranhos de layout com Tailwind */
+            box-sizing: border-box; /* Inclui padding e borda nos cálculos de largura e altura */
+        }
+        #drinks-menu > div {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        #drinks-menu > div > button {
+            margin-right: 4px;
+            flex-grow: 1;
+        }
+        #drinks-menu > div > button:last-child{
+            margin-right: 0;
         }
     </style>
 </head>
@@ -58,19 +83,22 @@
             <div class="bg-white rounded-lg shadow-md p-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-2">Participantes</h2>
                 <div id="participants-list" class="space-y-2">
-                    </div>
+                    <!-- Participants list will be rendered here -->
+                </div>
             </div>
 
             <div class="bg-white rounded-lg shadow-md p-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-2">Bebidas</h2>
                 <div id="drinks-menu" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    </div>
+                    <!-- Drinks menu will be rendered here -->
+                </div>
             </div>
 
             <div class="bg-white rounded-lg shadow-md p-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-2">Resumo de Consumo</h2>
                 <div id="consumption-summary" class="space-y-2">
-                    </div>
+                    <!-- Consumption summary will be rendered here -->
+                </div>
             </div>
         </div>
 
@@ -78,9 +106,11 @@
             <div class="bg-white rounded-lg shadow-md p-6 max-w-lg w-full max-h-3/4 overflow-y-auto">
                 <h2 class="text-xl font-bold mb-4">Relatórios de Datas Anteriores</h2>
                 <div id="past-reports-list" class="space-y-2 mb-4">
-                    </div>
+                    <!-- Past reports list will be rendered here -->
+                </div>
                 <div id="past-report-details" class="space-y-2 mb-4 hidden">
-                    </div>
+                    <!-- Past report details will be rendered here -->
+                </div>
                 <div class="flex justify-end">
                     <button id="close-past-reports-modal" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Fechar</button>
                 </div>
@@ -88,538 +118,15 @@
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script>
-        // Initialize Firebase
+    <!-- Update to use modular Firebase v9 -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
             authDomain: "bardorotary-517fd.firebaseapp.com",
             projectId: "bardorotary-517fd",
-            storageBucket: "bardorotary-517fd.firebasestorage.app",
-            messagingSenderId: "317149178650",
-            appId: "1:317149178650:web:53a7bc63cf660436949aa3",
-            measurementId: "G-WQCQZG9PM2"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        const participantsList = document.getElementById('participants-list');
-        const drinksMenu = document.getElementById('drinks-menu');
-        const consumptionSummary = document.getElementById('consumption-summary');
-        const calculateTotalsButton = document.getElementById('calculate-totals');
-        const generateReportButton = document.getElementById('generate-report');
-        const messageBox = document.getElementById('message-box');
-        const addParticipantButton = document.getElementById('add-participant');
-        const closeBarButton = document.getElementById('close-bar');
-        const openBarButton = document.getElementById('open-bar');
-        const displayDateElement = document.getElementById('display-date');
-        const markPaidButton = document.getElementById('mark-paid');
-        const fetchPastReportsButton = document.getElementById('fetch-past-reports');
-        const pastReportsModal = document.getElementById('past-reports-modal');
-        const pastReportsList = document.getElementById('past-reports-list');
-        const pastReportDetails = document.getElementById('past-report-details');
-        const closePastReportsModalButton = document.getElementById('close-past-reports-modal');
-        
-        let participants = [
-            "Ana Raque Freddo",
-            "Anderson Mayco Ronda",
-            "Ândrea Claudia de Oliveira",
-            "Antonio Piccini",
-            "Arsênio Silvio Feix",
-            "Ataide Jose Sassi",
-            "Cesar Roberto Silva Paz",
-            "CLEBERSON DORSE",
-            "Darci da Silva",
-            "Dirceu Paulo Baldissera",
-            "Edmar Sena Parente",
-            "ELAINE CHRISTINA DE CARLI",
-            "FELIPE ANTONIO BATTISTON",
-            "Felipe Beijamini",
-            "Gilberto Rothmund",
-            "Gilmar Trevisan",
-            "Gláucia Rita Civa Kirch",
-            "HELOISE GOMES DE MORAES",
-            "Ivan Pavan",
-            "Jeancarlo Gross",
-            "João Carlos Ramella",
-            "José Domingos Moreira Neto",
-            "José Fernandes Ghiraldi",
-            "KARINA RAMIREZ STARIKOFF",
-            "LEONARDO HOFFMANN",
-            "Luiz Antônio Gomes de Moraes",
-            "MARCOS DE ALMEIDA",
-            "MARIA ANGELICA PENSO",
-            "MATEUS EMANUEL PEREIRA DUARTE",
-            "Nelci Adão Baretta",
-            "Paulo Sergio Bueno",
-            "Pedro Botelho",
-            "Rafael Caselani",
-            "RAFAEL DOUGLAS DALLAGNOLE",
-            "Raul Távora",
-            "Regis Paulo Reckziegel",
-            "ROGÉRIO ANTONIO SCANDOLARA SILVA",
-            "TALISSON BUENO",
-            "Valdir de Mello",
-            "Valdomiro Leite",
-            "Volmei Anderson Schlindwein"
-        ].map((name, index) => ({ id: index + 1, name, drinks: {}, paid: false }));
-        
-        let selectedParticipantId = null;
-        let meetingDate = new Date();
-        let previousDebts = {};
-        let barOpen = true;
-        let pastMeetings = []; // Para armazenar registros de reuniões anteriores
-
-        function updateDisplayDate() {
-            displayDateElement.textContent = meetingDate.toLocaleDateString();
-        }
-
-        updateDisplayDate();
-
-        function renderParticipantsList() {
-            if (!participantsList) return;
-            participantsList.innerHTML = '';
-            participants.forEach(participant => {
-                const participantDiv = document.createElement('div');
-                participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
-                participantDiv.textContent = participant.name + (participant.paid ? ' (Pago)' : '');
-                const totalConsumo = calcularTotalConsumo(participant);
-                participantDiv.innerHTML += `<br><span class="text-sm text-gray-600">Total: $${totalConsumo.toFixed(2)}</span>`;
-                participantDiv.dataset.participantId = participant.id;
-                participantDiv.addEventListener('click', () => {
-                    if (selectedParticipantId !== null) {
-                        const previousSelected = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
-                        if (previousSelected) {
-                            previousSelected.classList.remove('selected');
-                        }
-                    }
-                    selectedParticipantId = participant.id;
-                    participantDiv.classList.add('selected');
-                    showMessage(`Participante selecionado: ${participant.name}`);
-                });
-                participantDiv.addEventListener('dblclick', () => {
-                    const newName = prompt('Enter new name:', participant.name);
-                    if (newName && newName.trim() !== "") {
-                        participant.name = newName;
-                        saveDataToFirestore();
-                        renderParticipantsList();
-                        showMessage(`Participante ${participant.id} renomeado para ${newName}`);
-                    }
-                });
-                participantsList.appendChild(participantDiv);
-            });
-        }
-
-        function calcularTotalConsumo(participant) {
-            let total = 0;
-            for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                const drink = drinks.find(d => d.name === drinkName);
-                if (drink) {
-                    total += quantity * drink.price;
-                }
-            }
-            const previousDebt = previousDebts[participant.id] || 0;
-            total += previousDebt;
-            return total;
-        }
-
-        renderParticipantsList();
-
-        // Nomes das bebidas atualizados conforme solicitado
-        const drinks = [
-            { name: 'Refrigerante', price: 5.00 },
-            { name: 'Cerveja Garrafa', price: 12.00 },
-            { name: 'Cerveja Lata', price: 10.00 },
-            { name: 'Água Com Gás', price: 3.00 },
-            { name: 'Água Sem Gás', price: 3.00 },
-            { name: 'Cerveja Lata Zero Álcool', price: 5.00 },
-        ];
-
-        function renderDrinksMenu() {
-            if (!drinksMenu) return;
-            drinksMenu.innerHTML = '';
-            drinks.forEach(drink => {
-                const drinkButton = document.createElement('button');
-                drinkButton.classList.add('bg-indigo-500', 'hover:bg-indigo-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded-md', 'shadow-md', 'focus:outline-none', 'focus:shadow-outline', 'text-sm');
-                drinkButton.textContent = `${drink.name} ($${drink.price.toFixed(2)})`;
-                drinkButton.addEventListener('click', () => {
-                    if (selectedParticipantId === null) {
-                        showMessage('Por favor, selecione um participante primeiro.');
-                        return;
-                    }
-                    if (!barOpen) {
-                        showMessage('O bar está fechado. Abra o bar para adicionar consumos.');
-                        return;
-                    }
-                    const participant = participants.find(p => p.id === selectedParticipantId);
-                    participant.drinks[drink.name] = (participant.drinks[drink.name] || 0) + 1;
-                    saveDataToFirestore();
-                    renderParticipantsList();
-                    showMessage(`Adicionado ${drink.name} a ${participant.name}`);
-                });
-                
-                const subtractButton = document.createElement('button');
-                subtractButton.textContent = '-';
-                subtractButton.classList.add('bg-red-500', 'hover:bg-red-700', 'text-white', 'font-bold', 'py-1', 'px-2', 'rounded-md', 'shadow-md', 'focus:outline-none', 'focus:shadow-outline', 'text-xs');
-                subtractButton.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    if (selectedParticipantId === null) {
-                        showMessage('Por favor, selecione um participante primeiro.');
-                        return;
-                    }
-                    if (!barOpen) {
-                        showMessage('O bar está fechado.');
-                        return;
-                    }
-                    subtractDrink(selectedParticipantId, drink.name);
-                });
-
-                const drinkContainer = document.createElement('div');
-                drinkContainer.classList.add('flex', 'items-center', 'space-x-2');
-                drinkContainer.appendChild(drinkButton);
-                drinkContainer.appendChild(subtractButton);
-                drinksMenu.appendChild(drinkContainer);
-            });
-        }
-
-        renderDrinksMenu();
-
-        calculateTotalsButton.addEventListener('click', () => {
-            if (!consumptionSummary) return;
-            consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Consumo Total:</h3>';
-            let totalRevenue = 0;
-            participants.forEach(participant => {
-                let participantTotal = 0;
-                const participantDiv = document.createElement('div');
-                participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
-                participantDiv.innerHTML = `<strong class="text-blue-600">${participant.name}:</strong> <span class="${participant.paid ? 'text-green-500' : 'text-red-500'}">(${participant.paid ? 'Pago' : 'Não Pago'})</span><br>`;
-                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                    const drink = drinks.find(d => d.name === drinkName);
-                    if (drink) {
-                        const drinkTotal = quantity * drink.price;
-                        participantTotal += drinkTotal;
-                        participantDiv.innerHTML += `&nbsp;&nbsp;&nbsp;${drinkName}: ${quantity} x $${drink.price.toFixed(2)} = $${drinkTotal.toFixed(2)}<br>`;
-                    }
-                }
-                const previousDebt = previousDebts[participant.id] || 0;
-                participantTotal += previousDebt;
-                participantDiv.innerHTML += `<strong class="text-green-600">&nbsp;&nbsp;&nbsp;Total: $${participantTotal.toFixed(2)}</strong>`;
-                if (previousDebt > 0) {
-                    participantDiv.innerHTML += `<br><span class="text-red-500">&nbsp;&nbsp;&nbsp;Débito Anterior: $${previousDebt.toFixed(2)}</span>`;
-                }
-                consumptionSummary.appendChild(participantDiv);
-                totalRevenue += participantTotal;
-            });
-            const totalDiv = document.createElement('div');
-            totalDiv.classList.add('p-2', 'rounded-md', 'bg-yellow-100', 'border', 'border-yellow-300', 'text-md', 'font-semibold');
-            totalDiv.textContent = `Receita Total: $${totalRevenue.toFixed(2)}`;
-            consumptionSummary.appendChild(totalDiv);
-        });
-
-        generateReportButton.addEventListener('click', () => {
-            if (!consumptionSummary) return;
-            const report = {};
-            participants.forEach(participant => {
-                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                    report[drinkName] = (report[drinkName] || 0) + quantity;
-                }
-            });
-
-            consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Relatório de Consumo:</h3>';
-            for (const [drinkName, totalQuantity] of Object.entries(report)) {
-                const reportDiv = document.createElement('div');
-                reportDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
-                reportDiv.textContent = `${drinkName}: ${totalQuantity}`;
-                consumptionSummary.appendChild(reportDiv);
-            }
-
-            let totalRevenue = 0;
-            participants.forEach(participant => {
-                let participantTotal = 0;
-                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                    const drink = drinks.find(d => d.name === drinkName);
-                    if (drink) {
-                        participantTotal += quantity * drink.price;
-                    }
-                }
-                const previousDebt = previousDebts[participant.id] || 0;
-                participantTotal += previousDebt;
-                totalRevenue += participantTotal;
-            });
-
-            const totalDiv = document.createElement('div');
-            totalDiv.classList.add('p-2', 'rounded-md', 'bg-yellow-100', 'border', 'border-yellow-300', 'text-md', 'font-semibold');
-            totalDiv.textContent = `Receita Total: $${totalRevenue.toFixed(2)}`;
-            consumptionSummary.appendChild(totalDiv);
-        });
-
-        function showMessage(message) {
-            if (!messageBox) return;
-            messageBox.textContent = message;
-            messageBox.classList.add('show');
-            setTimeout(() => {
-                messageBox.classList.remove('show');
-            }, 3000);
-        }
-
-        addParticipantButton.addEventListener('click', () => {
-            const newParticipantName = prompt('Digite o nome do novo participante:');
-            if (newParticipantName && newParticipantName.trim() !== '') {
-                const newParticipant = {
-                    id: participants.length + 1,
-                    name: newParticipantName,
-                    drinks: {},
-                    paid: false
-                };
-                participants.push(newParticipant);
-                saveDataToFirestore();
-                renderParticipantsList();
-                showMessage(`Adicionado participante: ${newParticipant.name}`);
-            } else {
-                showMessage('Nome do participante não pode estar vazio.');
-            }
-        });
-
-        function subtractDrink(participantId, drinkName) {
-            const participant = participants.find(p => p.id === participantId);
-            if (participant && participant.drinks[drinkName] && participant.drinks[drinkName] > 0) {
-                participant.drinks[drinkName] -= 1;
-                saveDataToFirestore();
-                renderParticipantsList();
-                showMessage(`Removido 1 ${drinkName} de ${participant.name}`);
-            } else {
-                showMessage(`Não há ${drinkName} para remover de ${participants.find(p => p.id === participantId).name}`);
-            }
-        }
-
-        markPaidButton.addEventListener('click', () => {
-            if (selectedParticipantId === null) {
-                showMessage('Por favor, selecione um participante primeiro.');
-                return;
-            }
-            const participant = participants.find(p => p.id === selectedParticipantId);
-            if (!participant.paid) {
-                participant.paid = true;
-                saveDataToFirestore();
-                showMessage(`${participant.name} marcado como pago.`);
-                renderParticipantsList();
-            } else {
-                showMessage(`${participant.name} já está marcado como pago.`);
-            }
-        });
-
-        closeBarButton.addEventListener('click', () => {
-            if (!barOpen) {
-                showMessage('O bar já está fechado.');
-                return;
-            }
-            
-            // Verificar se tem algum consumo
-            let hasConsumption = false;
-            for (const participant of participants) {
-                if (Object.keys(participant.drinks).length > 0) {
-                    hasConsumption = true;
-                    break;
-                }
-            }
-            
-            // Se não tiver consumo, perguntar se deseja continuar
-            if (!hasConsumption) {
-                const confirm = window.confirm('Não há consumo registrado. Deseja encerrar o bar mesmo assim?');
-                if (!confirm) {
-                    return;
-                }
-            }
-            
-            // Salvar os dados atuais como um registro histórico antes de limpar
-            const currentSessionData = {
-                date: meetingDate.toISOString(),
-                formattedDate: meetingDate.toLocaleDateString(),
-                participants: JSON.parse(JSON.stringify(participants)),
-                previousDebts: JSON.parse(JSON.stringify(previousDebts)),
-                hasConsumption: hasConsumption
-            };
-            
-            // Salvar no banco de dados na coleção de histórico
-            db.collection("barHistory").add(currentSessionData)
-                .then(() => {
-                    console.log("Histórico salvo com sucesso!");
-                })
-                .catch((error) => {
-                    console.error("Erro ao salvar histórico: ", error);
-                });
-            
-            barOpen = false;
-            showMessage('Bar encerrado. O consumo não pago será transferido para a próxima data.');
-            
-            // Transferir débitos não pagos
-            participants.forEach(participant => {
-                if (!participant.paid) {
-                    let participantTotal = 0;
-                    for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                        const drink = drinks.find(d => d.name === drinkName);
-                        if (drink) {
-                            participantTotal += quantity * drink.price;
-                        }
-                    }
-                    if (participantTotal > 0) {
-                        previousDebts[participant.id] = (previousDebts[participant.id] || 0) + participantTotal;
-                    }
-                }
-                
-                // Limpar consumo atual
-                participant.drinks = {};
-                participant.paid = false;
-            });
-            
-            // Avançar para a próxima semana
-            meetingDate = new Date(meetingDate.setDate(meetingDate.getDate() + 7));
-            saveDataToFirestore();
-            updateDisplayDate();
-            renderParticipantsList();
-        });
-
-        openBarButton.addEventListener('click', () => {
-            if (barOpen) {
-                showMessage('O bar já está aberto.');
-                return;
-            }
-            barOpen = true;
-            saveDataToFirestore();
-            showMessage('Bar aberto. Os débitos anteriores foramcarregados.');
-        });
-
-        // Novo botão para buscar relatórios de datas anteriores
-        fetchPastReportsButton.addEventListener('click', () => {
-            fetchPastReports();
-            pastReportsModal.classList.remove('hidden');
-        });
-
-        closePastReportsModalButton.addEventListener('click', () => {
-            pastReportsModal.classList.add('hidden');
-            pastReportDetails.classList.add('hidden');
-        });
-
-        function fetchPastReports() {
-            pastReportsList.innerHTML = 'Carregando relatórios...';
-            db.collection("barHistory")
-                .orderBy("date", "desc") // Ordena por data, do mais recente ao mais antigo
-                .get()
-                .then((querySnapshot) => {
-                    pastMeetings = []; // Limpa o array anterior
-                    pastReportsList.innerHTML = ''; // Limpa a lista na tela
-                    querySnapshot.forEach((doc) => {
-                        const meetingData = doc.data();
-                        pastMeetings.push({
-                            id: doc.id,
-                            date: meetingData.date,
-                            formattedDate: meetingData.formattedDate,
-                            participants: meetingData.participants,
-                            previousDebts: meetingData.previousDebts,
-                            hasConsumption: meetingData.hasConsumption
-                        });
-                        const reportItem = document.createElement('div');
-                        reportItem.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'cursor-pointer', 'hover:bg-gray-100');
-                        reportItem.textContent = `Reunião de ${meetingData.formattedDate}`;
-                        reportItem.dataset.meetingId = doc.id;
-                        reportItem.addEventListener('click', () => showPastReportDetails(doc.id));
-                        pastReportsList.appendChild(reportItem);
-                    });
-                    if (pastMeetings.length === 0) {
-                        pastReportsList.innerHTML = 'Nenhum relatório encontrado.';
-                    }
-                })
-                .catch((error) => {
-                    console.error("Erro ao buscar relatórios anteriores: ", error);
-                    pastReportsList.innerHTML = 'Erro ao carregar relatórios.';
-                });
-        }
-
-        function showPastReportDetails(meetingId) {
-            const meeting = pastMeetings.find(m => m.id === meetingId);
-            if (!meeting) {
-                pastReportDetails.innerHTML = 'Relatório não encontrado.';
-                pastReportDetails.classList.remove('hidden');
-                return;
-            }
-
-            pastReportDetails.innerHTML = `<h3 class="text-lg font-semibold text-gray-700 mb-2">Relatório da Reunião de ${meeting.formattedDate}</h3>`;
-            if (meeting.hasConsumption)
-            {
-                meeting.participants.forEach(participant => {
-                    const participantDiv = document.createElement('div');
-                    participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
-                    participantDiv.innerHTML = `<strong class="text-blue-600">${participant.name}:</strong> <span class="${participant.paid ? 'text-green-500' : 'text-red-500'}">(${participant.paid ? 'Pago' : 'Não Pago'})</span><br>`;
-                    let participantTotal = 0;
-                    for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                        const drink = drinks.find(d => d.name === drinkName);
-                        if (drink) {
-                            const drinkTotal = quantity * drink.price;
-                            participantTotal += drinkTotal;
-                            participantDiv.innerHTML += `&nbsp;&nbsp;&nbsp;${drinkName}: ${quantity} x $${drink.price.toFixed(2)} = $${drinkTotal.toFixed(2)}<br>`;
-                        }
-                    }
-                    const previousDebt = meeting.previousDebts[participant.id] || 0;
-                    participantTotal += previousDebt;
-                    participantDiv.innerHTML += `<strong class="text-green-600">&nbsp;&nbsp;&nbsp;Total: $${participantTotal.toFixed(2)}</strong>`;
-                     if (previousDebt > 0) {
-                        participantDiv.innerHTML += `<br><span class="text-red-500">&nbsp;&nbsp;&nbsp;Débito Anterior: $${previousDebt.toFixed(2)}</span>`;
-                    }
-                    pastReportDetails.appendChild(participantDiv);
-                });
-            }
-            else{
-                pastReportDetails.innerHTML += `<p>Não houve consumo nesta reunião.</p>`;
-            }
-
-
-            pastReportDetails.classList.remove('hidden');
-        }
-
-        function saveDataToFirestore() {
-            const data = {
-                meetingDate: meetingDate.toISOString(),
-                participants: participants,
-                previousDebts: previousDebts,
-                barOpen: barOpen
-            };
-            db.collection("barData").doc("current").set(data)
-                .then(() => {
-                    console.log("Data saved successfully!");
-                })
-                .catch((error) => {
-                    console.error("Error saving data: ", error);
-                });
-        }
-
-        function loadDataFromFirestore() {
-            db.collection("barData").doc("current").get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        meetingDate = data.meetingDate ? new Date(data.meetingDate) : new Date();
-                        participants = data.participants || participants;
-                        previousDebts = data.previousDebts || {};
-                        barOpen = data.barOpen !== undefined ? data.barOpen : true;
-                        updateDisplayDate();
-                        renderParticipantsList();
-                        renderDrinksMenu(); // Garante que o menu de bebidas seja renderizado também
-                        console.log("Data loaded successfully!");
-                    } else {
-                        console.log("No data found, initializing...");
-                        saveDataToFirestore(); // Save initial data
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error loading data: ", error);
-                });
-        }
-
-        // Carregar dados do Firestore ao iniciar
-        loadDataFromFirestore();
-    </script>
-</body>
-</html>
+            sto
