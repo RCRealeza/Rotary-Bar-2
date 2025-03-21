@@ -180,6 +180,7 @@
         updateDisplayDate();
 
         function renderParticipantsList() {
+            if (!participantsList) return;
             participantsList.innerHTML = '';
             participants.forEach(participant => {
                 const participantDiv = document.createElement('div');
@@ -238,6 +239,7 @@
         ];
 
         function renderDrinksMenu() {
+            if (!drinksMenu) return;
             drinksMenu.innerHTML = '';
             drinks.forEach(drink => {
                 const drinkButton = document.createElement('button');
@@ -286,6 +288,7 @@
         renderDrinksMenu();
 
         calculateTotalsButton.addEventListener('click', () => {
+            if (!consumptionSummary) return;
             consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Consumo Total:</h3>';
             let totalRevenue = 0;
             participants.forEach(participant => {
@@ -317,6 +320,7 @@
         });
 
         generateReportButton.addEventListener('click', () => {
+            if (!consumptionSummary) return;
             const report = {};
             participants.forEach(participant => {
                 for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
@@ -353,6 +357,7 @@
         });
 
         function showMessage(message) {
+            if (!messageBox) return;
             messageBox.textContent = message;
             messageBox.classList.add('show');
             setTimeout(() => {
@@ -484,7 +489,7 @@
             }
             barOpen = true;
             saveDataToFirestore();
-            showMessage('Bar aberto. Os débitos anteriores foram carregados.');
+            showMessage('Bar aberto. Os débitos anteriores foramcarregados.');
         });
 
         // Novo botão para buscar relatórios de datas anteriores
@@ -493,4 +498,128 @@
             pastReportsModal.classList.remove('hidden');
         });
 
-        closeP
+        closePastReportsModalButton.addEventListener('click', () => {
+            pastReportsModal.classList.add('hidden');
+            pastReportDetails.classList.add('hidden');
+        });
+
+        function fetchPastReports() {
+            pastReportsList.innerHTML = 'Carregando relatórios...';
+            db.collection("barHistory")
+                .orderBy("date", "desc") // Ordena por data, do mais recente ao mais antigo
+                .get()
+                .then((querySnapshot) => {
+                    pastMeetings = []; // Limpa o array anterior
+                    pastReportsList.innerHTML = ''; // Limpa a lista na tela
+                    querySnapshot.forEach((doc) => {
+                        const meetingData = doc.data();
+                        pastMeetings.push({
+                            id: doc.id,
+                            date: meetingData.date,
+                            formattedDate: meetingData.formattedDate,
+                            participants: meetingData.participants,
+                            previousDebts: meetingData.previousDebts,
+                            hasConsumption: meetingData.hasConsumption
+                        });
+                        const reportItem = document.createElement('div');
+                        reportItem.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'cursor-pointer', 'hover:bg-gray-100');
+                        reportItem.textContent = `Reunião de ${meetingData.formattedDate}`;
+                        reportItem.dataset.meetingId = doc.id;
+                        reportItem.addEventListener('click', () => showPastReportDetails(doc.id));
+                        pastReportsList.appendChild(reportItem);
+                    });
+                    if (pastMeetings.length === 0) {
+                        pastReportsList.innerHTML = 'Nenhum relatório encontrado.';
+                    }
+                })
+                .catch((error) => {
+                    console.error("Erro ao buscar relatórios anteriores: ", error);
+                    pastReportsList.innerHTML = 'Erro ao carregar relatórios.';
+                });
+        }
+
+        function showPastReportDetails(meetingId) {
+            const meeting = pastMeetings.find(m => m.id === meetingId);
+            if (!meeting) {
+                pastReportDetails.innerHTML = 'Relatório não encontrado.';
+                pastReportDetails.classList.remove('hidden');
+                return;
+            }
+
+            pastReportDetails.innerHTML = `<h3 class="text-lg font-semibold text-gray-700 mb-2">Relatório da Reunião de ${meeting.formattedDate}</h3>`;
+            if (meeting.hasConsumption)
+            {
+                meeting.participants.forEach(participant => {
+                    const participantDiv = document.createElement('div');
+                    participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
+                    participantDiv.innerHTML = `<strong class="text-blue-600">${participant.name}:</strong> <span class="${participant.paid ? 'text-green-500' : 'text-red-500'}">(${participant.paid ? 'Pago' : 'Não Pago'})</span><br>`;
+                    let participantTotal = 0;
+                    for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
+                        const drink = drinks.find(d => d.name === drinkName);
+                        if (drink) {
+                            const drinkTotal = quantity * drink.price;
+                            participantTotal += drinkTotal;
+                            participantDiv.innerHTML += `&nbsp;&nbsp;&nbsp;${drinkName}: ${quantity} x $${drink.price.toFixed(2)} = $${drinkTotal.toFixed(2)}<br>`;
+                        }
+                    }
+                    const previousDebt = meeting.previousDebts[participant.id] || 0;
+                    participantTotal += previousDebt;
+                    participantDiv.innerHTML += `<strong class="text-green-600">&nbsp;&nbsp;&nbsp;Total: $${participantTotal.toFixed(2)}</strong>`;
+                     if (previousDebt > 0) {
+                        participantDiv.innerHTML += `<br><span class="text-red-500">&nbsp;&nbsp;&nbsp;Débito Anterior: $${previousDebt.toFixed(2)}</span>`;
+                    }
+                    pastReportDetails.appendChild(participantDiv);
+                });
+            }
+            else{
+                pastReportDetails.innerHTML += `<p>Não houve consumo nesta reunião.</p>`;
+            }
+
+
+            pastReportDetails.classList.remove('hidden');
+        }
+
+        function saveDataToFirestore() {
+            const data = {
+                meetingDate: meetingDate.toISOString(),
+                participants: participants,
+                previousDebts: previousDebts,
+                barOpen: barOpen
+            };
+            db.collection("barData").doc("current").set(data)
+                .then(() => {
+                    console.log("Data saved successfully!");
+                })
+                .catch((error) => {
+                    console.error("Error saving data: ", error);
+                });
+        }
+
+        function loadDataFromFirestore() {
+            db.collection("barData").doc("current").get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        meetingDate = data.meetingDate ? new Date(data.meetingDate) : new Date();
+                        participants = data.participants || participants;
+                        previousDebts = data.previousDebts || {};
+                        barOpen = data.barOpen !== undefined ? data.barOpen : true;
+                        updateDisplayDate();
+                        renderParticipantsList();
+                        renderDrinksMenu(); // Garante que o menu de bebidas seja renderizado também
+                        console.log("Data loaded successfully!");
+                    } else {
+                        console.log("No data found, initializing...");
+                        saveDataToFirestore(); // Save initial data
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading data: ", error);
+                });
+        }
+
+        // Carregar dados do Firestore ao iniciar
+        loadDataFromFirestore();
+    </script>
+</body>
+</html>
