@@ -40,16 +40,6 @@
 
         <div id="message-box" class="hidden"></div>
 
-        <div class="flex flex-wrap justify-center space-x-2 space-y-2 md:space-y-0 mb-6">
-            <button id="open-bar" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Abrir Bar</button>
-            <button id="close-bar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Encerrar Bar</button>
-            <button id="add-participant" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Adicionar Participante</button>
-            <button id="mark-paid" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Marcar como Pago</button>
-            <button id="calculate-totals" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Calcular Totais</button>
-            <button id="generate-report" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Gerar Relatório</button>
-            <button id="fetch-past-reports" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Buscar Relatórios Anteriores</button>
-        </div>
-
         <div class="flex justify-center mb-4">
             <div id="meeting-date" class="text-lg font-semibold text-gray-800">Data da Reunião: <span id="display-date"></span></div>
         </div>
@@ -71,174 +61,159 @@
                 <h2 class="text-lg font-semibold text-gray-800 mb-2">Resumo de Consumo</h2>
                 <div id="consumption-summary" class="space-y-2">
                     </div>
-            </div>
-        </div>
-
-        <div id="past-reports-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-            <div class="bg-white rounded-lg shadow-md p-6 max-w-lg w-full max-h-3/4 overflow-y-auto">
-                <h2 class="text-xl font-bold mb-4">Relatórios de Datas Anteriores</h2>
-                <div id="past-reports-list" class="space-y-2 mb-4">
-                    </div>
-                <div id="past-report-details" class="space-y-2 mb-4 hidden">
-                    </div>
-                <div class="flex justify-end">
-                    <button id="close-past-reports-modal" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Fechar</button>
                 </div>
             </div>
+
+            <div class="flex justify-center space-x-4 mt-6">
+                <button id="calculate-totals" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Calcular Totais</button>
+                <button id="generate-report" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Gerar Relatório</button>
+                <button id="add-participant" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Adicionar Participante</button>
+                <button id="close-bar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Encerrar Bar</button>
+                <button id="open-bar" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Abrir Bar</button>
+                <button id="mark-paid" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Marcar como Pago</button>
+            </div>
         </div>
-    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-            apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
-            authDomain: "bardorotary-517fd.firebaseapp.com",
-            projectId: "bardorotary-517fd",
-            storageBucket: "bardorotary-517fd.firebasestorage.app",
-            messagingSenderId: "317149178650",
-            appId: "1:317149178650:web:53a7bc63cf660436949aa3",
-            measurementId: "G-WQCQZG9PM2"
-        };
+        <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+        <script>
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
+                authDomain: "bardorotary-517fd.firebaseapp.com",
+                projectId: "bardorotary-517fd",
+                storageBucket: "bardorotary-517fd.firebasestorage.app",
+                messagingSenderId: "317149178650",
+                appId: "1:317149178650:web:53a7bc63cf660436949aa3",
+                measurementId: "G-WQCQZG9PM2"
+            };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
 
-        const participantsList = document.getElementById('participants-list');
-        const drinksMenu = document.getElementById('drinks-menu');
-        const consumptionSummary = document.getElementById('consumption-summary');
-        const calculateTotalsButton = document.getElementById('calculate-totals');
-        const generateReportButton = document.getElementById('generate-report');
-        const messageBox = document.getElementById('message-box');
-        const addParticipantButton = document.getElementById('add-participant');
-        const closeBarButton = document.getElementById('close-bar');
-        const openBarButton = document.getElementById('open-bar');
-        const displayDateElement = document.getElementById('display-date');
-        const markPaidButton = document.getElementById('mark-paid');
-        const fetchPastReportsButton = document.getElementById('fetch-past-reports');
-        const pastReportsModal = document.getElementById('past-reports-modal');
-        const pastReportsList = document.getElementById('past-reports-list');
-        const pastReportDetails = document.getElementById('past-report-details');
-        const closePastReportsModalButton = document.getElementById('close-past-reports-modal');
-        
-        let participants = [
-            "Ana Raque Freddo",
-            "Anderson Mayco Ronda",
-            "Ândrea Claudia de Oliveira",
-            "Antonio Piccini",
-            "Arsênio Silvio Feix",
-            "Ataide Jose Sassi",
-            "Cesar Roberto Silva Paz",
-            "CLEBERSON DORSE",
-            "Darci da Silva",
-            "Dirceu Paulo Baldissera",
-            "Edmar Sena Parente",
-            "ELAINE CHRISTINA DE CARLI",
-            "FELIPE ANTONIO BATTISTON",
-            "Felipe Beijamini",
-            "Gilberto Rothmund",
-            "Gilmar Trevisan",
-            "Gláucia Rita Civa Kirch",
-            "HELOISE GOMES DE MORAES",
-            "Ivan Pavan",
-            "Jeancarlo Gross",
-            "João Carlos Ramella",
-            "José Domingos Moreira Neto",
-            "José Fernandes Ghiraldi",
-            "KARINA RAMIREZ STARIKOFF",
-            "LEONARDO HOFFMANN",
-            "Luiz Antônio Gomes de Moraes",
-            "MARCOS DE ALMEIDA",
-            "MARIA ANGELICA PENSO",
-            "MATEUS EMANUEL PEREIRA DUARTE",
-            "Nelci Adão Baretta",
-            "Paulo Sergio Bueno",
-            "Pedro Botelho",
-            "Rafael Caselani",
-            "RAFAEL DOUGLAS DALLAGNOLE",
-            "Raul Távora",
-            "Regis Paulo Reckziegel",
-            "ROGÉRIO ANTONIO SCANDOLARA SILVA",
-            "TALISSON BUENO",
-            "Valdir de Mello",
-            "Valdomiro Leite",
-            "Volmei Anderson Schlindwein"
-        ].map((name, index) => ({ id: index + 1, name, drinks: {}, paid: false }));
-        
-        let selectedParticipantId = null;
-        let meetingDate = new Date();
-        let previousDebts = {};
-        let barOpen = true;
-        let pastMeetings = []; // Para armazenar registros de reuniões anteriores
+            const participantsList = document.getElementById('participants-list');
+            const drinksMenu = document.getElementById('drinks-menu');
+            const consumptionSummary = document.getElementById('consumption-summary');
+            const calculateTotalsButton = document.getElementById('calculate-totals');
+            const generateReportButton = document.getElementById('generate-report');
+            const messageBox = document.getElementById('message-box');
+            const addParticipantButton = document.getElementById('add-participant');
+            const closeBarButton = document.getElementById('close-bar');
+            const openBarButton = document.getElementById('open-bar');
+            const displayDateElement = document.getElementById('display-date');
+            const markPaidButton = document.getElementById('mark-paid'); // Get the new button
+            let participants = [
+                "Ana Raque Freddo",
+                "Anderson Mayco Ronda",
+                "Ândrea Claudia de Oliveira",
+                "Antonio Piccini",
+                "Arsênio Silvio Feix",
+                "Ataide Jose Sassi",
+                "Cesar Roberto Silva Paz",
+                "CLEBERSON DORSE",
+                "Darci da Silva",
+                "Dirceu Paulo Baldissera",
+                "Edmar Sena Parente",
+                "ELAINE CHRISTINA DE CARLI",
+                "FELIPE ANTONIO BATTISTON",
+                "Felipe Beijamini",
+                "Gilberto Rothmund",
+                "Gilmar Trevisan",
+                "Gláucia Rita Civa Kirch",
+                "HELOISE GOMES DE MORAES",
+                "Ivan Pavan",
+                "Jeancarlo Gross",
+                "João Carlos Ramella",
+                "José Domingos Moreira Neto",
+                "José Fernandes Ghiraldi",
+                "KARINA RAMIREZ STARIKOFF",
+                "LEONARDO HOFFMANN",
+                "Luiz Antônio Gomes de Moraes",
+                "MARCOS DE ALMEIDA",
+                "MARIA ANGELICA PENSO",
+                "MATEUS EMANUEL PEREIRA DUARTE",
+                "Nelci Adão Baretta",
+                "Paulo Sergio Bueno",
+                "Pedro Botelho",
+                "Rafael Caselani",
+                "RAFAEL DOUGLAS DALLAGNOLE",
+                "Raul Távora",
+                "Regis Paulo Reckziegel",
+                "ROGÉRIO ANTONIO SCANDOLARA SILVA",
+                "TALISSON BUENO",
+                "Valdir de Mello",
+                "Valdomiro Leite",
+                "Volmei Anderson Schlindwein"
+            ].map((name, index) => ({ id: index + 1, name, drinks: {}, paid: false })); // Convert to array of objects
+            let selectedParticipantId = null;
+            let meetingDate = new Date();
+            let previousDebts = {};
+            let barOpen = true;
 
-        function updateDisplayDate() {
-            displayDateElement.textContent = meetingDate.toLocaleDateString();
-        }
-
-        updateDisplayDate();
-
-        function renderParticipantsList() {
-            participantsList.innerHTML = '';
-            participants.forEach(participant => {
-                const participantDiv = document.createElement('div');
-                participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
-                participantDiv.textContent = participant.name + (participant.paid ? ' (Pago)' : '');
-                const totalConsumo = calcularTotalConsumo(participant);
-                participantDiv.innerHTML += `<br><span class="text-sm text-gray-600">Total: $${totalConsumo.toFixed(2)}</span>`;
-                participantDiv.dataset.participantId = participant.id;
-                participantDiv.addEventListener('click', () => {
-                    if (selectedParticipantId !== null) {
-                        const previousSelected = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
-                        if (previousSelected) {
-                            previousSelected.classList.remove('selected');
-                        }
-                    }
-                    selectedParticipantId = participant.id;
-                    participantDiv.classList.add('selected');
-                    showMessage(`Participante selecionado: ${participantDiv.textContent}`);
-                });
-                participantDiv.addEventListener('dblclick', () => {
-                    const newName = prompt('Enter new name:', participant.name);
-                    if (newName && newName.trim() !== "") {
-                        participant.name = newName;
-                        saveDataToFirestore();
-                        renderParticipantsList();
-                        showMessage(`Participante ${participant.id} renomeado para ${newName}`);
-                    }
-                });
-                participantsList.appendChild(participantDiv);
-            });
-        }
-
-        function calcularTotalConsumo(participant) {
-            let total = 0;
-            for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                const drink = drinks.find(d => d.name === drinkName);
-                if (drink) {
-                    total += quantity * drink.price;
-                }
+            function updateDisplayDate() {
+                displayDateElement.textContent = meetingDate.toLocaleDateString();
             }
-            const previousDebt = previousDebts[participant.id] || 0;
-            total += previousDebt;
-            return total;
-        }
 
-        renderParticipantsList();
+            updateDisplayDate();
 
-        // Nomes das bebidas atualizados conforme solicitado
-        const drinks = [
-            { name: 'Refrigerante', price: 5.00 },
-            { name: 'Cerveja Garrafa', price: 12.00 },
-            { name: 'Cerveja Lata', price: 10.00 },
-            { name: 'Água Com Gás', price: 3.00 },
-            { name: 'Água Sem Gás', price: 3.00 },
-            { name: 'Cerveja Lata Zero Álcool', price: 5.00 },
-        ];
+            function renderParticipantsList() {
+                participantsList.innerHTML = '';
+                participants.forEach(participant => {
+                    const participantDiv = document.createElement('div');
+                    participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
+                    participantDiv.textContent = participant.name + (participant.paid ? ' (Pago)' : ''); // Show paid status
+                    const totalConsumo = calcularTotalConsumo(participant); // Calculate total consumption
+                    participantDiv.innerHTML += `<br><span class="text-sm text-gray-600">Total: $${totalConsumo.toFixed(2)}</span>`; // Display total
+                    participantDiv.dataset.participantId = participant.id;
+                    participantDiv.addEventListener('click', () => {
+                        if (selectedParticipantId !== null) {
+                            const previousSelected = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
+                            if (previousSelected) {
+                                previousSelected.classList.remove('selected');
+                            }
+                        }
+                        selectedParticipantId = participant.id;
+                        participantDiv.classList.add('selected');
+                        showMessage(`Participante selecionado: ${participantDiv.textContent}`);
+                    });
+                    participantDiv.addEventListener('dblclick', () => {
+                        const newName = prompt('Enter new name:', participantDiv.textContent);
+                        if (newName && newName.trim() !== "") {
+                            participantDiv.textContent = newName;
+                            participant.name = newName;
+                            saveDataToFirestore(); // Save the change
+                            showMessage(`Participante ${participant.id} renamed to ${newName}`);
+                        }
+                    });
+                    participantsList.appendChild(participantDiv);
+                });
+            }
 
-        function renderDrinksMenu() {
-            drinksMenu.innerHTML = '';
+            function calcularTotalConsumo(participant) {
+                let total = 0;
+                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
+                    const drink = drinks.find(d => d.name === drinkName);
+                    if (drink) {
+                        total += quantity * drink.price;
+                    }
+                }
+                 const previousDebt = previousDebts[participant.id] || 0;
+                 total += previousDebt;
+                return total;
+            }
+
+            renderParticipantsList();
+
+            const drinks = [
+                { name: 'Soda', price: 5.00 },
+                { name: 'Cerveja Garrafa', price: 12.00 },
+                { name: 'Cerveja Lata', price: 10.00 },
+                { name: 'Água Garrafa (B)', price: 3.00 },
+                { name: 'Água Garrafa (NB)', price: 3.00 },
+                { name: 'Cerveja Lata Zero Álcool', price: 5.00 },
+            ];
+
             drinks.forEach(drink => {
                 const drinkButton = document.createElement('button');
                 drinkButton.classList.add('bg-indigo-500', 'hover:bg-indigo-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded-md', 'shadow-md', 'focus:outline-none', 'focus:shadow-outline', 'text-sm');
@@ -248,17 +223,16 @@
                         showMessage('Por favor, selecione um participante primeiro.');
                         return;
                     }
-                    if (!barOpen) {
+                     if (!barOpen) {
                         showMessage('O bar está fechado. Abra o bar para adicionar consumos.');
                         return;
                     }
                     const participant = participants.find(p => p.id === selectedParticipantId);
                     participant.drinks[drink.name] = (participant.drinks[drink.name] || 0) + 1;
                     saveDataToFirestore();
-                    renderParticipantsList();
+                    renderParticipantsList(); // Update the list to show new consumption
                     showMessage(`Adicionado ${drink.name} a ${participant.name}`);
                 });
-                
                 const subtractButton = document.createElement('button');
                 subtractButton.textContent = '-';
                 subtractButton.classList.add('bg-red-500', 'hover:bg-red-700', 'text-white', 'font-bold', 'py-1', 'px-2', 'rounded-md', 'shadow-md', 'focus:outline-none', 'focus:shadow-outline', 'text-xs');
@@ -268,7 +242,7 @@
                         showMessage('Por favor, selecione um participante primeiro.');
                         return;
                     }
-                    if (!barOpen) {
+                     if (!barOpen) {
                         showMessage('O bar está fechado.');
                         return;
                     }
@@ -281,180 +255,168 @@
                 drinkContainer.appendChild(subtractButton);
                 drinksMenu.appendChild(drinkContainer);
             });
-        }
 
-        renderDrinksMenu();
-
-        calculateTotalsButton.addEventListener('click', () => {
-            consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Consumo Total:</h3>';
-            let totalRevenue = 0;
-            participants.forEach(participant => {
-                let participantTotal = 0;
-                const participantDiv = document.createElement('div');
-                participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
-                participantDiv.innerHTML = `<strong class="text-blue-600">${participant.name}:</strong> <span class="${participant.paid ? 'text-green-500' : 'text-red-500'}">(${participant.paid ? 'Pago' : 'Não Pago'})</span><br>`;
-                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                    const drink = drinks.find(d => d.name === drinkName);
-                    if (drink) {
-                        const drinkTotal = quantity * drink.price;
-                        participantTotal += drinkTotal;
-                        participantDiv.innerHTML += `&nbsp;&nbsp;&nbsp;${drinkName}: ${quantity} x $${drink.price.toFixed(2)} = $${drinkTotal.toFixed(2)}<br>`;
+            calculateTotalsButton.addEventListener('click', () => {
+                consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Consumo Total:</h3>';
+                let totalRevenue = 0;
+                participants.forEach(participant => {
+                    let participantTotal = 0;
+                    const participantDiv = document.createElement('div');
+                    participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
+                    participantDiv.innerHTML = `<strong class="text-blue-600">${participant.name}:</strong> <span class="${participant.paid ? 'text-green-500' : 'text-red-500'}">(${participant.paid ? 'Pago' : 'Não Pago'})</span><br>`;
+                    for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
+                        const drink = drinks.find(d => d.name === drinkName);
+                        if (drink) {
+                            const drinkTotal = quantity * drink.price;
+                            participantTotal += drinkTotal;
+                             participantDiv.innerHTML += `&nbsp;&nbsp;&nbsp;${drinkName}: ${quantity} x $${drink.price.toFixed(2)} = $${drinkTotal.toFixed(2)}<br>`;
+                        }
                     }
-                }
-                const previousDebt = previousDebts[participant.id] || 0;
-                participantTotal += previousDebt;
-                participantDiv.innerHTML += `<strong class="text-green-600">&nbsp;&nbsp;&nbsp;Total: $${participantTotal.toFixed(2)}</strong>`;
-                if (previousDebt > 0) {
-                    participantDiv.innerHTML += `<br><span class="text-red-500">&nbsp;&nbsp;&nbsp;Débito Anterior: $${previousDebt.toFixed(2)}</span>`;
-                }
-                consumptionSummary.appendChild(participantDiv);
-                totalRevenue += participantTotal;
-            });
-            const totalDiv = document.createElement('div');
-            totalDiv.classList.add('p-2', 'rounded-md', 'bg-yellow-100', 'border', 'border-yellow-300', 'text-md', 'font-semibold');
-            totalDiv.textContent = `Receita Total: $${totalRevenue.toFixed(2)}`;
-            consumptionSummary.appendChild(totalDiv);
-        });
-
-        generateReportButton.addEventListener('click', () => {
-            const report = {};
-            participants.forEach(participant => {
-                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                    report[drinkName] = (report[drinkName] || 0) + quantity;
-                }
-            });
-
-            consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Relatório de Consumo:</h3>';
-            for (const [drinkName, totalQuantity] of Object.entries(report)) {
-                const reportDiv = document.createElement('div');
-                reportDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
-                reportDiv.textContent = `${drinkName}: ${totalQuantity}`;
-                consumptionSummary.appendChild(reportDiv);
-            }
-
-            let totalRevenue = 0;
-            participants.forEach(participant => {
-                let participantTotal = 0;
-                for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
-                    const drink = drinks.find(d => d.name === drinkName);
-                    if (drink) {
-                        participantTotal += quantity * drink.price;
+                    const previousDebt = previousDebts[participant.id] || 0;
+                    participantTotal += previousDebt;
+                    participantDiv.innerHTML += `<strong class="text-green-600">&nbsp;&nbsp;&nbsp;Total: $${participantTotal.toFixed(2)}</strong>`;
+                     if (previousDebt > 0) {
+                         participantDiv.innerHTML += `<br><span class="text-red-500">&nbsp;&nbsp;&nbsp;Débito Anterior: $${previousDebt.toFixed(2)}</span>`;
                     }
-                }
-                const previousDebt = previousDebts[participant.id] || 0;
-                participantTotal += previousDebt;
-                totalRevenue += participantTotal;
-            });
-
-            const totalDiv = document.createElement('div');
-            totalDiv.classList.add('p-2', 'rounded-md', 'bg-yellow-100', 'border', 'border-yellow-300', 'text-md', 'font-semibold');
-            totalDiv.textContent = `Receita Total: $${totalRevenue.toFixed(2)}`;
-            consumptionSummary.appendChild(totalDiv);
-        });
-
-        function showMessage(message) {
-            messageBox.textContent = message;
-            messageBox.classList.add('show');
-            setTimeout(() => {
-                messageBox.classList.remove('show');
-            }, 3000);
-        }
-
-        addParticipantButton.addEventListener('click', () => {
-            const newParticipantName = prompt('Digite o nome do novo participante:');
-            if (newParticipantName && newParticipantName.trim() !== '') {
-                const newParticipant = {
-                    id: participants.length + 1,
-                    name: newParticipantName,
-                    drinks: {},
-                    paid: false
-                };
-                participants.push(newParticipant);
-                saveDataToFirestore();
-                renderParticipantsList();
-                showMessage(`Adicionado participante: ${newParticipant.name}`);
-            } else {
-                showMessage('Nome do participante não pode estar vazio.');
-            }
-        });
-
-        function subtractDrink(participantId, drinkName) {
-            const participant = participants.find(p => p.id === participantId);
-            if (participant && participant.drinks[drinkName] && participant.drinks[drinkName] > 0) {
-                participant.drinks[drinkName] -= 1;
-                saveDataToFirestore();
-                renderParticipantsList();
-                showMessage(`Removido 1 ${drinkName} de ${participant.name}`);
-            } else {
-                showMessage(`Não há ${drinkName} para remover de ${participants.find(p => p.id === participantId).name}`);
-            }
-        }
-
-        markPaidButton.addEventListener('click', () => {
-            if (selectedParticipantId === null) {
-                showMessage('Por favor, selecione um participante primeiro.');
-                return;
-            }
-            const participant = participants.find(p => p.id === selectedParticipantId);
-            if (!participant.paid) {
-                participant.paid = true;
-                saveDataToFirestore();
-                showMessage(`${participant.name} marcado como pago.`);
-                renderParticipantsList();
-            } else {
-                showMessage(`${participant.name} já está marcado como pago.`);
-            }
-        });
-
-        closeBarButton.addEventListener('click', () => {
-            if (!barOpen) {
-                showMessage('O bar já está fechado.');
-                return;
-            }
-            
-            // Verificar se tem algum consumo
-            let hasConsumption = false;
-            for (const participant of participants) {
-                if (Object.keys(participant.drinks).length > 0) {
-                    hasConsumption = true;
-                    break;
-                }
-            }
-            
-            // Se não tiver consumo, perguntar se deseja continuar
-            if (!hasConsumption) {
-                const confirm = window.confirm('Não há consumo registrado. Deseja encerrar o bar mesmo assim?');
-                if (!confirm) {
-                    return;
-                }
-            }
-            
-            // Salvar os dados atuais como um registro histórico antes de limpar
-            const currentSessionData = {
-                date: meetingDate.toISOString(),
-                formattedDate: meetingDate.toLocaleDateString(),
-                participants: JSON.parse(JSON.stringify(participants)),
-                previousDebts: JSON.parse(JSON.stringify(previousDebts)),
-                hasConsumption: hasConsumption
-            };
-            
-            // Salvar no banco de dados na coleção de histórico
-            db.collection("barHistory").add(currentSessionData)
-                .then(() => {
-                    console.log("Histórico salvo com sucesso!");
-                })
-                .catch((error) => {
-                    console.error("Erro ao salvar histórico: ", error);
+                    consumptionSummary.appendChild(participantDiv);
+                    totalRevenue += participantTotal;
                 });
-            
-            barOpen = false;
-            showMessage('Bar encerrado. O consumo não pago será transferido para a próxima data.');
-            
-            // Transferir débitos não pagos
-            participants.forEach(participant => {
-                if (!participant.paid) {
+                const totalDiv = document.createElement('div');
+                totalDiv.classList.add('p-2', 'rounded-md', 'bg-yellow-100', 'border', 'border-yellow-300', 'text-md', 'font-semibold');
+                totalDiv.textContent = `Receita Total: $${totalRevenue.toFixed(2)}`;
+                consumptionSummary.appendChild(totalDiv);
+            });
+
+            generateReportButton.addEventListener('click', () => {
+                const report = {};
+                 participants.forEach(participant => {
+                    for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
+                        report[drinkName] = (report[drinkName] || 0) + quantity;
+                    }
+                 });
+
+                consumptionSummary.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Relatório de Consumo:</h3>';
+                for (const [drinkName, totalQuantity] of Object.entries(report)) {
+                    const reportDiv = document.createElement('div');
+                    reportDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'text-sm');
+                    reportDiv.textContent = `${drinkName}: ${totalQuantity}`;
+                    consumptionSummary.appendChild(reportDiv);
+                }
+
+                let totalRevenue = 0;
+                participants.forEach(participant => {
                     let participantTotal = 0;
                     for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
+                        const drink = drinks.find(d => d.name === drinkName);
+                        if (drink) {
+                            participantTotal += quantity * drink.price;
+                        }
+                    }
+                    const previousDebt = previousDebts[participant.id] || 0;
+                    participantTotal += previousDebt;
+                    totalRevenue += participantTotal;
+                });
+
+                const totalDiv = document.createElement('div');
+                totalDiv.classList.add('p-2', 'rounded-md', 'bg-yellow-100', 'border', 'border-yellow-300', 'text-md', 'font-semibold');
+                totalDiv.textContent = `Receita Total: $${totalRevenue.toFixed(2)}`;
+                consumptionSummary.appendChild(totalDiv);
+            });
+
+            function showMessage(message) {
+                messageBox.textContent = message;
+                messageBox.classList.add('show');
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, 3000);
+            }
+
+            addParticipantButton.addEventListener('click', () => {
+                const newParticipantName = prompt('Enter the name of the new participant:');
+                if (newParticipantName && newParticipantName.trim() !== '') {
+                    const newParticipant = {
+                        id: participants.length + 1,
+                        name: newParticipantName,
+                        drinks: {},
+                        paid: false
+                    };
+                    participants.push(newParticipant);
+                    saveDataToFirestore();
+
+                    const participantDiv = document.createElement('div');
+                    participantDiv.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'participant-item');
+                    participantDiv.textContent = newParticipant.name;
+                    participantDiv.dataset.participantId = newParticipant.id;
+                     participantDiv.addEventListener('click', () => {
+                        if (selectedParticipantId !== null) {
+                            const previousSelected = document.querySelector(`.participant-item[data-participant-id="${selectedParticipantId}"]`);
+                            if (previousSelected) {
+                                previousSelected.classList.remove('selected');
+                            }
+                        }
+                        selectedParticipantId = newParticipant.id;
+                        participantDiv.classList.add('selected');
+                        showMessage(`Selected participant: ${participantDiv.textContent}`);
+                    });
+                    participantDiv.addEventListener('dblclick', () => {
+                        const newName = prompt('Enter new name:', participantDiv.textContent);
+                        if (newName && newName.trim() !== "") {
+                            participantDiv.textContent = newName;
+                            newParticipant.name = newName;
+                            saveDataToFirestore(); // Save new name
+                            showMessage(`Participante ${newParticipant.id} renamed to ${newName}`);
+                        }
+                    });
+
+                    participantsList.appendChild(participantDiv);
+                    showMessage(`Adicionado participante: ${newParticipant.name}`);
+                } else {
+                    showMessage('Participant name cannot be empty.');
+                }
+            });
+
+            function subtractDrink(participantId, drinkName) {
+                const participant = participants.find(p => p.id === participantId);
+                if (participant && participant.drinks[drinkName] && participant.drinks[drinkName] > 0) {
+                    participant.drinks[drinkName] -= 1;
+                    saveDataToFirestore();
+                    renderParticipantsList(); // Update display after subtraction
+                    showMessage(`Removed 1 ${drinkName} from ${participant.name}`);
+                } else {
+                    showMessage(`No ${drinkName} to remove from ${participants.find(p => p.id === participantId).name}`);
+                }
+            }
+
+
+
+            markPaidButton.addEventListener('click', () => {
+                if (selectedParticipantId === null) {
+                    showMessage('Por favor, selecione um participante primeiro.');
+                    return;
+                }
+                const participant = participants.find(p => p.id === selectedParticipantId);
+                if (!participant.paid) {
+                    participant.paid = true;
+                    saveDataToFirestore();
+                    showMessage(`${participant.name} marked as paid.`);
+                     renderParticipantsList(); // Update participant list to show "(Pago)"
+                } else {
+                     showMessage(`${participant.name} is already marked as paid.`);
+                }
+
+            });
+
+
+            closeBarButton.addEventListener('click', () => {
+                if (!barOpen) {
+                    showMessage('O bar já está fechado.');
+                    return;
+                }
+                barOpen = false;
+                showMessage('Bar encerrado. O consumo será transferido para a próxima data.');
+                participants.forEach(participant => {
+                    let participantTotal = 0;
+                     for (const [drinkName, quantity] of Object.entries(participant.drinks)) {
                         const drink = drinks.find(d => d.name === drinkName);
                         if (drink) {
                             participantTotal += quantity * drink.price;
@@ -463,34 +425,60 @@
                     if (participantTotal > 0) {
                         previousDebts[participant.id] = (previousDebts[participant.id] || 0) + participantTotal;
                     }
-                }
-                
-                // Limpar consumo atual
-                participant.drinks = {};
-                participant.paid = false;
+                    participant.drinks = {};
+                    participant.paid = false; // Reset paid status
+                });
+                meetingDate = new Date(meetingDate.setDate(meetingDate.getDate() + 7));
+                saveDataToFirestore();
+                updateDisplayDate();
+                renderParticipantsList(); //update list
             });
-            
-            // Avançar para a próxima semana
-            meetingDate = new Date(meetingDate.setDate(meetingDate.getDate() + 7));
-            saveDataToFirestore();
-            updateDisplayDate();
-            renderParticipantsList();
-        });
 
-        openBarButton.addEventListener('click', () => {
-            if (barOpen) {
-                showMessage('O bar já está aberto.');
-                return;
+            openBarButton.addEventListener('click', () => {
+                if (barOpen) {
+                    showMessage('O bar já está aberto.');
+                    return;
+                }
+                barOpen = true;
+                saveDataToFirestore();
+                showMessage('Bar aberto. Os débitos anteriores foram carregados.');
+            });
+
+            function saveDataToFirestore() {
+                db.collection("bar").doc("dados").set({
+                    meetingDate: meetingDate,
+                    participants: participants,
+                    previousDebts: previousDebts,
+                    barOpen: barOpen
+                })
+                .then(() => {
+                    console.log("Dados salvos com sucesso no Firestore!");
+                })
+                .catch((error) => {
+                    console.error("Erro ao salvar dados no Firestore: ", error);
+                });
             }
-            barOpen = true;
-            saveDataToFirestore();
-            showMessage('Bar aberto. Os débitos anteriores foram carregados.');
-        });
 
-        // Novo botão para buscar relatórios de datas anteriores
-        fetchPastReportsButton.addEventListener('click', () => {
-            fetchPastReports();
-            pastReportsModal.classList.remove('hidden');
-        });
-
-        closePastReportsMo
+            // Carregar dados do Firestore na inicialização
+            db.collection("bar").doc("dados").get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        meetingDate = data.meetingDate ? new Date(data.meetingDate.seconds * 1000) : new Date();
+                        participants = data.participants || participants;
+                        previousDebts = data.previousDebts || {};
+                        barOpen = data.barOpen !== undefined ? data.barOpen : true;
+                        updateDisplayDate();
+                        renderParticipantsList();
+                        console.log("Dados carregados do Firestore com sucesso!");
+                    } else {
+                        console.log("Nenhum dado encontrado no Firestore. Iniciando com dados padrão.");
+                        saveDataToFirestore(); // Salva os dados iniciais
+                    }
+                })
+                .catch((error) => {
+                    console.error("Erro ao carregar dados do Firestore: ", error);
+                });
+        </script>
+    </body>
+    </html>
