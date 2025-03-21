@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rotary Club Bar App</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
     #message-box {
       display: none;
       position: fixed;
@@ -24,92 +27,29 @@
     #message-box.show {
       display: block;
     }
-    .participant-item {
-      cursor: pointer;
-    }
-    .participant-item.selected {
-      background-color: #f0f4f8;
-      border: 2px solid #3b82f6;
-    }
-    #participants-list > div,
-    #drinks-menu > button,
-    #consumption-summary > div {
-      width: 100%;
-      height: auto;
-      display: block;
-      box-sizing: border-box;
-    }
-    #drinks-menu > div {
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-    #drinks-menu > div > button {
-      margin-right: 4px;
-      flex-grow: 1;
-    }
-    #drinks-menu > div > button:last-child {
-      margin-right: 0;
-    }
   </style>
 </head>
-<body class="bg-gray-100 font-roboto">
-  <div class="container mx-auto p-4 sm:p-6 md:p-8">
-    <h1 class="text-3xl font-semibold text-blue-700 text-center mb-6">
-      Rotary Club Bar Consumption Tracker
-    </h1>
-
+<body class="bg-gray-100">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center text-blue-700 mb-6">Rotary Club Bar App</h1>
+    
     <div id="message-box" class="hidden"></div>
+    
+    <button id="fetch-past-reports" class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-md">Buscar Relatórios</button>
 
-    <div class="flex flex-wrap justify-center space-x-2 space-y-2 md:space-y-0 mb-6">
-      <button id="open-bar" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Abrir Bar</button>
-      <button id="close-bar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Encerrar Bar</button>
-      <button id="add-participant" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Adicionar Participante</button>
-      <button id="mark-paid" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Marcar como Pago</button>
-      <button id="calculate-totals" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Calcular Totais</button>
-      <button id="generate-report" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Gerar Relatório</button>
-      <button id="fetch-past-reports" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow-md m-1">Buscar Relatórios Anteriores</button>
-    </div>
-
-    <div class="flex justify-center mb-4">
-      <div id="meeting-date" class="text-lg font-semibold text-gray-800">Data da Reunião: <span id="display-date"></span></div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-      <div class="bg-white rounded-lg shadow-md p-4">
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Participantes</h2>
-        <div id="participants-list" class="space-y-2"></div>
-      </div>
-
-      <div class="bg-white rounded-lg shadow-md p-4">
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Bebidas</h2>
-        <div id="drinks-menu" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-      </div>
-
-      <div class="bg-white rounded-lg shadow-md p-4">
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Resumo de Consumo</h2>
-        <div id="consumption-summary" class="space-y-2"></div>
-      </div>
-    </div>
-
-    <div id="past-reports-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-      <div class="bg-white rounded-lg shadow-md p-6 max-w-lg w-full max-h-3/4 overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4">Relatórios de Datas Anteriores</h2>
-        <div id="past-reports-list" class="space-y-2 mb-4"></div>
-        <div id="past-report-details" class="space-y-2 mb-4 hidden"></div>
-        <div class="flex justify-end">
-          <button id="close-past-reports-modal" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md">Fechar</button>
-        </div>
+    <div id="past-reports-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-md p-6 max-w-lg w-full">
+        <h2 class="text-xl font-bold mb-4">Relatórios Anteriores</h2>
+        <div id="past-reports-list" class="mb-4"></div>
+        <div id="past-report-details" class="hidden"></div>
+        <button id="close-past-reports-modal" class="bg-red-500 text-white py-2 px-4 rounded-md">Fechar</button>
       </div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
@@ -117,75 +57,74 @@
       projectId: "bardorotary-517fd",
       storageBucket: "bardorotary-517fd.appspot.com",
       messagingSenderId: "317149178650",
-      appId: "1:317149178650:web:53a7bc63cf660436949aa3",
-      measurementId: "G-WQCQZG9PM2"
+      appId: "1:317149178650:web:53a7bc63cf660436949aa3"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const messageBox = document.getElementById('message-box');
-    const fetchPastReportsButton = document.getElementById('fetch-past-reports');
-    const pastReportsList = document.getElementById('past-reports-list');
-    const pastReportDetails = document.getElementById('past-report-details');
-    const pastReportsModal = document.getElementById('past-reports-modal');
-    const closePastReportsModalButton = document.getElementById('close-past-reports-modal');
+    const fetchPastReportsButton = document.getElementById("fetch-past-reports");
+    const pastReportsList = document.getElementById("past-reports-list");
+    const pastReportDetails = document.getElementById("past-report-details");
+    const pastReportsModal = document.getElementById("past-reports-modal");
+    const closePastReportsModalButton = document.getElementById("close-past-reports-modal");
+    const messageBox = document.getElementById("message-box");
 
     function showMessage(msg) {
       messageBox.textContent = msg;
-      messageBox.classList.remove('hidden');
-      messageBox.classList.add('show');
+      messageBox.classList.remove("hidden");
+      messageBox.classList.add("show");
       setTimeout(() => {
-        messageBox.classList.remove('show');
-        messageBox.classList.add('hidden');
+        messageBox.classList.remove("show");
+        messageBox.classList.add("hidden");
       }, 3000);
     }
 
-    fetchPastReportsButton.addEventListener('click', async () => {
+    fetchPastReportsButton.addEventListener("click", async () => {
       try {
-        pastReportsList.innerHTML = '';
-        pastReportDetails.innerHTML = '';
-        pastReportDetails.classList.add('hidden');
+        pastReportsList.innerHTML = "";
+        pastReportDetails.innerHTML = "";
+        pastReportDetails.classList.add("hidden");
 
         const q = query(collection(db, "barHistory"), orderBy("date", "desc"));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          pastReportsList.innerHTML = '<div class="p-2 bg-yellow-100 rounded-md">Nenhum relatório anterior encontrado.</div>';
+          pastReportsList.innerHTML = '<div class="p-2 bg-yellow-100 rounded-md">Nenhum relatório encontrado.</div>';
         } else {
           querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const reportItem = document.createElement('div');
-            reportItem.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'cursor-pointer', 'hover:bg-gray-100');
-            reportItem.textContent = data.formattedDate || data.date.split('T')[0];
+            const reportItem = document.createElement("div");
+            reportItem.classList.add("p-2", "rounded-md", "bg-gray-50", "border", "border-gray-200", "cursor-pointer", "hover:bg-gray-100");
+            reportItem.textContent = data.formattedDate || data.date.split("T")[0];
 
-            reportItem.addEventListener('click', () => {
-              pastReportDetails.innerHTML = '';
+            reportItem.addEventListener("click", () => {
+              pastReportDetails.innerHTML = "";
+              pastReportDetails.classList.remove("hidden");
               data.participants.forEach(p => {
-                const div = document.createElement('div');
-                div.classList.add('p-2', 'rounded-md', 'bg-white', 'border', 'border-gray-200', 'mb-2', 'text-sm');
+                const div = document.createElement("div");
+                div.classList.add("p-2", "rounded-md", "bg-white", "border", "border-gray-200", "mb-2", "text-sm");
                 div.innerHTML = `<strong>${p.name}</strong><br>`;
                 for (const [drink, qty] of Object.entries(p.drinks)) {
-                  div.innerHTML += `&nbsp;&nbsp;&nbsp;${drink}: ${qty}<br>`;
+                  div.innerHTML += `${drink}: ${qty}<br>`;
                 }
                 pastReportDetails.appendChild(div);
               });
-              pastReportDetails.classList.remove('hidden');
             });
 
             pastReportsList.appendChild(reportItem);
           });
         }
 
-        pastReportsModal.classList.remove('hidden');
+        pastReportsModal.classList.remove("hidden");
       } catch (error) {
-        console.error("Erro ao buscar relatórios anteriores:", error);
-        showMessage("Erro ao buscar relatórios anteriores: " + error.message);
+        console.error("Erro ao buscar relatórios:", error);
+        showMessage("Erro ao buscar relatórios: " + error.message);
       }
     });
 
-    closePastReportsModalButton.addEventListener('click', () => {
-      pastReportsModal.classList.add('hidden');
+    closePastReportsModalButton.addEventListener("click", () => {
+      pastReportsModal.classList.add("hidden");
     });
   </script>
 </body>
