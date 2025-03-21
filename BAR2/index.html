@@ -1,132 +1,36 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rotary Club Bar App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Use a specific version of Tailwind instead of the browser version -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Estilos personalizados para a caixa de mensagem */
-        #message-box {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #f0fdf4;
-            color: #15803d;
-            padding: 16px;
-            border-radius: 6px;
-            border: 1px solid #16a34a;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-        #message-box.show {
-            display: block;
-        }
-        .participant-item {
-            cursor: pointer;
-        }
-        .participant-item.selected {
-            background-color: #f0f4f8;
-            border: 2px solid #3b82f6;
-        }
-        /* Estilos para garantir que os itens tenham largura e altura */
-        #participants-list > div,
-        #drinks-menu > button,
-        #consumption-summary > div {
-            width: 100%; /* Garante que os itens ocupem a largura total do contêiner */
-            height: auto; /* Permite que a altura se ajuste ao conteúdo */
-            display: block; /* Evita comportamentos estranhos de layout com Tailwind */
-            box-sizing: border-box; /* Inclui padding e borda nos cálculos de largura e altura */
-        }
-        #drinks-menu > div {
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 4px;
-        }
-        #drinks-menu > div > button {
-            margin-right: 4px;
-            flex-grow: 1;
-        }
-        #drinks-menu > div > button:last-child{
-            margin-right: 0;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 font-roboto">
-    <div class="container mx-auto p-4 sm:p-6 md:p-8">
-        <h1 class="text-3xl font-semibold text-blue-700 text-center mb-6">Rotary Club Bar Consumption Tracker</h1>
+                        reportItem.classList.add('p-2', 'rounded-md', 'bg-gray-50', 'border', 'border-gray-200', 'cursor-pointer', 'hover:bg-gray-100');
+                        reportItem.textContent = data.formattedDate || data.date.split('T')[0];
+                        reportItem.addEventListener('click', () => {
+                            pastReportDetails.innerHTML = ''; // limpa
+                            data.participants.forEach(p => {
+                                const div = document.createElement('div');
+                                div.classList.add('p-2', 'rounded-md', 'bg-white', 'border', 'border-gray-200', 'mb-2', 'text-sm');
+                                div.innerHTML = `<strong>${p.name}</strong><br>`;
+                                let total = 0;
+                                for (const [drink, qty] of Object.entries(p.drinks)) {
+                                    div.innerHTML += `&nbsp;&nbsp;&nbsp;${drink}: ${qty}<br>`;
+                                }
+                                pastReportDetails.appendChild(div);
+                            });
+                            pastReportDetails.classList.remove('hidden');
+                        });
+                        pastReportsList.appendChild(reportItem);
+                    });
+                }
 
-        <div id="message-box" class="hidden"></div>
+                pastReportsModal.classList.remove('hidden');
+            } catch (error) {
+                console.error("Erro ao buscar relatórios anteriores: ", error);
+                showMessage("Erro ao buscar relatórios anteriores: " + error.message);
+            }
+        });
 
-        <div class="flex flex-wrap justify-center space-x-2 space-y-2 md:space-y-0 mb-6">
-            <button id="open-bar" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Abrir Bar</button>
-            <button id="close-bar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Encerrar Bar</button>
-            <button id="add-participant" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Adicionar Participante</button>
-            <button id="mark-paid" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Marcar como Pago</button>
-            <button id="calculate-totals" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Calcular Totais</button>
-            <button id="generate-report" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Gerar Relatório</button>
-            <button id="fetch-past-reports" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline m-1">Buscar Relatórios Anteriores</button>
-        </div>
+        closePastReportsModalButton.addEventListener('click', () => {
+            pastReportsModal.classList.add('hidden');
+        });
 
-        <div class="flex justify-center mb-4">
-            <div id="meeting-date" class="text-lg font-semibold text-gray-800">Data da Reunião: <span id="display-date"></span></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-4">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2">Participantes</h2>
-                <div id="participants-list" class="space-y-2">
-                    <!-- Participants list will be rendered here -->
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-md p-4">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2">Bebidas</h2>
-                <div id="drinks-menu" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <!-- Drinks menu will be rendered here -->
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-md p-4">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2">Resumo de Consumo</h2>
-                <div id="consumption-summary" class="space-y-2">
-                    <!-- Consumption summary will be rendered here -->
-                </div>
-            </div>
-        </div>
-
-        <div id="past-reports-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-            <div class="bg-white rounded-lg shadow-md p-6 max-w-lg w-full max-h-3/4 overflow-y-auto">
-                <h2 class="text-xl font-bold mb-4">Relatórios de Datas Anteriores</h2>
-                <div id="past-reports-list" class="space-y-2 mb-4">
-                    <!-- Past reports list will be rendered here -->
-                </div>
-                <div id="past-report-details" class="space-y-2 mb-4 hidden">
-                    <!-- Past report details will be rendered here -->
-                </div>
-                <div class="flex justify-end">
-                    <button id="close-past-reports-modal" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-md focus:outline-none focus:shadow-outline">Fechar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Update to use modular Firebase v9 -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDTGd0uqJ--dF40fYOYDBomtLjdnsRpNGE",
-            authDomain: "bardorotary-517fd.firebaseapp.com",
-            projectId: "bardorotary-517fd",
-            sto
+        // Carregar dados ao iniciar
+        loadDataFromFirestore();
+    </script>
+</body>
+</html>
